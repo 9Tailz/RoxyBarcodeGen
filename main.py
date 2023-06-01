@@ -2,10 +2,11 @@
 from fileinput import close
 import pandas as pd
 import barcode as bc #Barcode Generator
-from barcode.writer import SVGWriter
+from barcode.writer import ImageWriter
 from os import chdir #Change Dir
 from tkinter import HORIZONTAL, simpledialog,filedialog
 import PySimpleGUI as sg
+import os
 
 barcode128 = bc.get_barcode_class('code128')
 
@@ -27,8 +28,8 @@ def GenerateDocs(DataFrame):
     Serial = DataFrame['Serial Number']
     df['Barcode'] = barcodes
     df.reset_index()
-    df["@image"] = df.apply(lambda row: f"\Images\{FileName}_{row.name + 1}.svg", axis=1)
-    df.to_csv("IMPORT ME.txt", index=False)
+    df["@image"] = df.apply(lambda row: f"{TargetFolder}\{FileName}_{row.name + 1}.png", axis=1)
+    df.to_csv("IMPORT ME.csv", index=False)
     with open('BarcodesRAW.txt', 'w') as f:
         for i in barcodes:
             f.write(str(i) + "\n")
@@ -39,14 +40,15 @@ def GenBarcodesNew(DataFrame):
     barcodes = DataFrame['Barcode']
     Serial = DataFrame['Serial Number']
     for index, i in enumerate(barcodes):
-        barcode128(str(i),writer=SVGWriter()).save(f"{FileName}_{index+1}",options=options)
+        barcode128(str(i),ImageWriter()).save(f"{FileName}_{index + 1}",options=options)
+
 
 
 options = {
     'module_width' : 0.5,
     'module_height' : 30.0,
     'font_size' : 10,
-    'font_path': '/Fonts/Ubuntu-Regular.ttf',
+    # 'font_path': '/Fonts/Ubuntu-Regular.ttf',
     'quiet_zone' : 2,
     'dpi' : 600,
     }
