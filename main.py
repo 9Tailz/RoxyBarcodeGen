@@ -29,6 +29,7 @@ def GenerateDocs(DataFrame):
     df['Barcode'] = barcodes
     df.reset_index()
     df["@image"] = df.apply(lambda row: f"{TargetFolder}\{FileName}_{row.name + 1}.png", axis=1)
+    df['Serial'] = DataFrame['Serial Number']
     df.to_csv("IMPORT ME.csv", index=False)
     with open('BarcodesRAW.txt', 'w') as f:
         for i in barcodes:
