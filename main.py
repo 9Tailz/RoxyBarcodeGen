@@ -2,13 +2,15 @@
 from fileinput import close
 import pandas as pd
 import barcode as bc #Barcode Generator
-from barcode.writer import ImageWriter
+from barcode.writer import ImageWriter #Uses Pillow to write png
 from os import chdir #Change Dir
-from tkinter import HORIZONTAL, simpledialog,filedialog
-import PySimpleGUI as sg
-import os
+from tkinter import HORIZONTAL, simpledialog,filedialog # File and Folder Prompts to Set working directory
+import PySimpleGUI as sg #Python Simple GUI
 
+# Set Barcode Class 'Code128'
 barcode128 = bc.get_barcode_class('code128')
+
+# Define Functions ---->
 
 def GetFolder():
     FolderName = filedialog.askdirectory()
@@ -35,7 +37,7 @@ def GenerateDocs(DataFrame):
         for i in barcodes:
             f.write(str(i) + "\n")
     close()
-    
+
 
 def GenBarcodesNew(DataFrame):
     barcodes = DataFrame['Barcode']
@@ -43,24 +45,28 @@ def GenBarcodesNew(DataFrame):
     for index, i in enumerate(barcodes):
         barcode128(str(i),ImageWriter()).save(f"{FileName}_{index + 1}",options=options)
 
+#<------
 
-
+# Barcode Writer Options
 options = {
-    'module_width' : 0.5,
-    'module_height' : 30.0,
+    'module_width' : 0.5, # Float, default 0.2
+    'module_height' : 30.0, # Float default 15.0
     'font_size' : 10,
     # 'font_path': '/Fonts/Ubuntu-Regular.ttf',
-    'quiet_zone' : 2,
-    'dpi' : 600,
+    'quiet_zone' : 2, # Left and right padding default 15.0
+    'dpi' : 600, # Image DPI default 300 ImageWriter() only
     }
 
 sg.theme('Reds')
 
+# Simple GUI Layout using nested Lists
 layout = [
     [sg.Text('Generator')],
     [sg.Text('Output Name'),sg.InputText(key='-INPUT-')],
     [sg.Push(),sg.Button('Select Folder',key='-FOLDERBTN-'),sg.Button('Select File',key='-FILEBTN-'),sg.Button('Generate',key='-STARTBTN-'),sg.Push()]
 ]
+
+# Spawn Window and apply GUI Layout and skin
 varwindow = sg.Window('TestGUI', layout)
 while True:
     event, values = varwindow.read()
@@ -79,6 +85,9 @@ while True:
             continue
         vari = 0
         FileName = values['-INPUT-']
+        # TO DO: 
+        # Implament Threading
+        # Implament Progress bar
         chdir(TargetFolder)
         varDataFrame = GetCSV(TargetFile,TargetFolder)
         GenerateDocs(varDataFrame)
