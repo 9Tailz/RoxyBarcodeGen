@@ -11,6 +11,8 @@ import PySimpleGUI as sg #Python Simple GUI
 barcode128 = bc.get_barcode_class('code128')
 
 # Define Functions ---->
+# TODO:
+# Update Target Folder/File Strings in GUI on return
 
 def GetFolder():
     FolderName = filedialog.askdirectory()
@@ -39,7 +41,7 @@ def GenerateDocs(DataFrame):
     close()
 
 
-def GenBarcodesNew(DataFrame):
+def GenerateBarcodes(DataFrame):
     barcodes = DataFrame['Barcode']
     Serial = DataFrame['Serial Number']
     for index, i in enumerate(barcodes):
@@ -63,7 +65,9 @@ sg.theme('Reds')
 layout = [
     [sg.Text('Generator')],
     [sg.Text('Output Name'),sg.InputText(key='-INPUT-')],
-    [sg.Push(),sg.Button('Select Folder',key='-FOLDERBTN-'),sg.Button('Select File',key='-FILEBTN-'),sg.Button('Generate',key='-STARTBTN-'),sg.Push()]
+    [sg.Push(),sg.Button('Select Folder',key='-FOLDERBTN-'),sg.Button('Select File',key='-FILEBTN-'),sg.Button('Generate',key='-STARTBTN-'),sg.Push()],
+    [sg.Text('Target Folder: --',key="FOLDERSTRING")],
+    [sg.Text('Target File: -- ',key="FILESTRING")]
 ]
 
 # Spawn Window and apply GUI Layout and skin
@@ -74,10 +78,12 @@ while True:
         break
 
     if event == '-FILEBTN-':
-       TargetFile = GetFile()
+        TargetFile = GetFile()
+        varwindow['FILESTRING'].Update(f'Target File: {TargetFile}')
 
     if event == '-FOLDERBTN-':
-       TargetFolder = GetFolder()
+        TargetFolder = GetFolder()
+        varwindow['FOLDERSTRING'].Update(f'Target Folder: {TargetFolder}')
 
     if event == '-STARTBTN-':
         if  values['-INPUT-'] == "":
@@ -91,5 +97,5 @@ while True:
         chdir(TargetFolder)
         varDataFrame = GetCSV(TargetFile,TargetFolder)
         GenerateDocs(varDataFrame)
-        GenBarcodesNew(varDataFrame)
-        sg.popup('Finished')
+        GenerateBarcodes(varDataFrame)
+        sg.popup(f'Finished \n Output Location: {TargetFolder}')
