@@ -4,9 +4,10 @@ from fileinput import close
 import pandas as pd
 from barcode import Code128 #Barcode Generator
 from barcode.writer import ImageWriter #Uses Pillow to write png
-# from os import chdir #Change Dir
 import os
 import sys
+from alive_progress import alive_bar
+import subprocess
 
 ## Def Fuctions
 
@@ -16,7 +17,9 @@ def main():
     FileName = str(sys.argv[3])
     try:
         os.mkdir(TargetFolder)
+        print(f"{TargetFolder} Made")
     except FileExistsError:
+        print("Target Folder Exists, continuing")
         pass
     os.chdir(TargetFolder)
     print("Loading CSV....")
@@ -26,6 +29,7 @@ def main():
     print("Done\n Generating Barcodes...")
     GenerateBarcodes(varDataFrame, FileName, options)
     print("Done\n Please check everything is correct")
+    subprocess.Popen(['explorer',TargetFolder])
 
 def GetCSV(TargetFile):
     df = pd.read_csv(TargetFile,header=1,usecols=['Serial Number','Barcode'])
@@ -40,24 +44,27 @@ def GenerateDocs(DataFrame, TargetFolder, FileName):
     df["@image"] = df.apply(lambda row: f"{TargetFolder}\{FileName}_{row.name + 1}.png", axis=1)
     df['Serial'] = DataFrame['Serial Number']
     df.to_csv("IMPORT ME.csv", index=False)
-    with open('BarcodesRAW.txt', 'w') as f:
-        for i in barcodes:
-            f.write(str(i) + "\n")
-    close()
+    with alive_bar(barcodes.shape[0]) as bar:
+        with open('BarcodesRAW.txt', 'w') as f:
+            for i in barcodes:
+                f.write(str(i) + "\n")
+                bar()
+        close()
 
 
 def GenerateBarcodes(DataFrame, FileName, options):
     barcodes = DataFrame['Barcode']
     Serial = DataFrame['Serial Number']
-    for index, i in enumerate(barcodes):
-        Code128(str(i),ImageWriter()).save(f"{FileName}_{index + 1}",options=options)
+    with alive_bar(barcodes.shape[0]) as bar:
+        for index, i in enumerate(barcodes):
+            Code128(str(i),ImageWriter()).save(f"{FileName}_{index + 1}",options=options)
+            bar()
 
 ## Barcode Writer Options
 options = {
     'module_width' : 0.5, # Float, default 0.2
     'module_height' : 30.0, # Float default 15.0
-    'font_size' : 10,
-    # 'font_path': '/Fonts/Ubuntu-Regular.ttf',
+    'font_size' : 10, # 'font_path': '/Fonts/Ubuntu-Regular.ttf',
     'quiet_zone' : 2, # Left and right padding default 15.0
     'dpi' : 600, # Image DPI default 300 ImageWriter() only
     }
